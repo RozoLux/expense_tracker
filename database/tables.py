@@ -1,3 +1,5 @@
+#add a python layer to database 
+
 import psycopg2
 
 dbname = "expense_tracker"
