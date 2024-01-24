@@ -1,0 +1,24 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Welcome to Expense Tracker</title>
+        <link rel="stylesheet" href="{{  url_for('static', filename='style.css')  }}">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <h1>Welcome to the Expense Tracker App</h1>
+
+        {% if users %}
+            <ul>
+                {% for user in users %}
+                    <li> {{ user.name }} - {{ user.email}}</li>
+                {% endfor%}
+            </ul>
+        {% elif error %}
+            <p>Error: {{ error }}</p>
+        {% else %}
+            <p>No users found</p>
+        {% endif %}         
+    </body>
+</html>

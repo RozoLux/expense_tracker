@@ -10,6 +10,7 @@ def create_app():
     app.debug = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:8954@localhost/expense_tracker'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = 'workhard'
    
 
    

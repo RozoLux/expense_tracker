@@ -1,5 +1,7 @@
 from . import db
 
+
+
 class Categories (db.Model) :
     categoryid = db.Column(db.Integer, primary_key=True)
     categoryname = db.Column(db.String, nullable=False)
@@ -31,3 +33,5 @@ class Users (db.Model) :
             'password': self.password,
             'profilepictureid': self.profilepictureid
         }
+    
+
