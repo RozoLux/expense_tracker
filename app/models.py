@@ -1,5 +1,6 @@
 from . import db
-
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class Categories (db.Model) :
@@ -18,12 +19,19 @@ class Profilepictures (db.Model) :
     profilepictureid = db.Column(db.Integer, primary_key=True)
     imagedata = db.Column(db.LargeBinary, nullable=False)
 
-class Users (db.Model) :
+class Users (db.Model, UserMixin) :
     userid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False)
-    password = db.Column(db.String, nullable=False)
+    password_hash = db.Column(db.String, nullable=False)
     profilepictureid = db.Column(db.Integer, nullable=False)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_id(self):
+        return str(self.userid) #Flask-Login expects the user identifier to be string
+    
 
     def to_dict(self):
         return {

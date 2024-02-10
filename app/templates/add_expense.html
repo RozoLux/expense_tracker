@@ -1,0 +1,44 @@
+<!-- templates/add_expense.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class= "container">
+    <h2>Add Expense</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.amount.label(class="form-label") }}
+            {{ form.amount(class="form-control") }}
+            {% if form.amount.errors %}
+                {% for error in form.amount.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.categoryid.label(class="form-label") }}
+            {{ form.categoryid(class="form-control")}}
+        </div>
+        <div class="form-group">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control")}}
+        </div>
+        <div class="form-group">
+            {{ form.date.label(class="form-label") }}
+            {{ form.date(class="form-control")}}
+        </div>
+        <button type="submit" class="btn btn-primary">Add Expense</button>
+    </form>
+    <div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class ="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div> 
+</div>
+    
+{% endblock content %}

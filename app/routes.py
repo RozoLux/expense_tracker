@@ -1,8 +1,10 @@
-from flask import Blueprint, current_app, render_template, url_for, flash, redirect, jsonify
-from .models import Users
+from flask import Blueprint, current_app, render_template, url_for, flash, redirect, jsonify, abort
+from .models import Users, Expenses # Import Users model
 from . import db
-from .forms import RegistrationForm
+from .forms import RegistrationForm, LoginForm, ExpenseForm 
 from werkzeug.security import generate_password_hash
+from flask_login import login_user, current_user, login_required, logout_user
+
 
 
 main = Blueprint('main', __name__)
@@ -34,7 +36,74 @@ def register():
         db.session.commit()
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('home'))
-    return render_template('registration.html', title= 'Register', form=form )
-    
+    return render_template('register.html', title= 'Register', form=form )
 
+@main.route('/login', methods=['GET', 'POST'])
+def login(): 
+    form = LoginForm()
 
+    if form.validate_on_submit():
+        #Form is valid, proceed with authentication
+        user = Users.query.filter_by(name=form.username.data).first()
+        print(f"User found: {user}")
+
+        if user and user.check_password(form.password.data):
+            # User is authenticated, log them in
+            login_user(user)
+            flash('Login succesful !', 'succes')
+            return redirect(url_for('main.home'))
+        else:
+            print("Password check failed")
+            flash('Login Unsuccessful.Please check username and password', 'danger')
+
+    return render_template('login.html', title='Login', form=form)
+
+@main.route('/add_expense', methods=['GET', 'POST'])
+@login_required
+def add_expense():
+    form = ExpenseForm()
+    if form.validate_on_submit():
+        expense = Expenses(userid=current_user.userid, 
+                           amount=form.amount.data,
+                           description=form.description.data,
+                           date=form.date.data,
+                           categoryid=form.categoryid.data)
+        db.session.add(expense)
+        db.session.commit()
+        flash('Your expense has been added !', 'succes')
+        return redirect(url_for('main.view_expenses'))
+    return render_template('add_expense.html', form=form)
+
+@main.route('/expenses')
+@login_required
+def view_expenses():
+    expenses = Expenses.query.filter_by(userid=current_user.userid).order_by(Expenses.date.desc()).all()
+    return render_template('expenses.html', expenses=expenses)
+
+@main.route('/delete_expense/<int:expense_id>', methods=['POST'])
+@login_required
+def delete_expense(expense_id):
+    expense = Expenses.query.get_or_404(expense_id)
+    if expense.userid != current_user.userid:
+        abort(403) # Prevent deleting someone else's expense
+    db.session.delete(expense)
+    db.session.commit()
+    flash('Your expense has been deleted!', 'success')
+    return redirect(url_for('main.view_expenses'))
+
+@main.route('/edit_expense/<int:expense_id>', methods=['GET', 'POST'])
+@login_required
+def edit_expense(expense_id) :
+    expense = Expenses.query.get_or_404(expense_id)
+    if expense.userid != current_user.userid:
+        abort(403) # Prevent editing someone else's expense
+    form = ExpenseForm(obj=expense) # Pre-fill form
+    if form.validate_on_submit():
+        expense.amount = form.amount.data
+        expense.categoryid = form.categoryid.data
+        expense.description = form.description.data
+        expense.data = form.date.data
+        db.session.commit()
+        flash('Expense updated successfully.', 'success')
+        return redirect (url_for('view_expenses'))
+    render_template('edit_expense.html', form=form)

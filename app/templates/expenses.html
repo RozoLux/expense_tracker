@@ -1,0 +1,40 @@
+<!-- templates/expense.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Expenses</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.categoryid }}</td> <!-- Ideally, show category name-->
+                <td>{{ expense.description }}</td>
+                <td>
+                    <!-- Edit button/link-->
+                    <a href="{{ url_for('main.edit_expense' , expense_id=expense.expenseid) }}" class="btn btn-primary">Edit</a>
+                    <!-- Delete button, using a form to send a POST request--> 
+                    <form action="{{ url_for ('main.delete_expense' , expense_id=expense.expenseid) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock content %}
