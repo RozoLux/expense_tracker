@@ -1,9 +1,10 @@
 from flask import Blueprint, current_app, render_template, url_for, flash, redirect, jsonify, abort
-from .models import Users, Expenses # Import Users model
+from .models import Users, Expenses, Categories # Import Users model
 from . import db
 from .forms import RegistrationForm, LoginForm, ExpenseForm 
 from werkzeug.security import generate_password_hash
 from flask_login import login_user, current_user, login_required, logout_user
+from sqlalchemy import func
 
 
 
@@ -105,5 +106,29 @@ def edit_expense(expense_id) :
         expense.data = form.date.data
         db.session.commit()
         flash('Expense updated successfully.', 'success')
-        return redirect (url_for('view_expenses'))
-    render_template('edit_expense.html', form=form)
+        return redirect (url_for('main.view_expenses'))
+    return render_template('edit_expense.html', form=form)
+
+@main.route('/dashboard')
+@login_required
+def dashboard():
+    # #aggregate expenses by category 
+    # expenses_by_category = db.session.query(Expenses.categoryid, func.sum(Expenses.amount).label('total_amount')).group_by(Expenses.categoryid).filter(Expenses.userid==current_user.userid).all()
+
+     #aggregate expenses by category 
+    expenses_by_category = db.session.query(Categories.categoryname, func.sum(Expenses.amount).label('total_amount')).group_by(Categories.categoryname).filter(Expenses.userid==current_user.userid).all()
+
+    # Total expenses
+    total_expenses=db.session.query(func.sum(Expenses.amount)).filter(Expenses.userid==current_user.userid)
+
+    # Aggregate expense by category for the current user
+    expenses_data = db.session.query(Expenses.categoryid, func.sum(Expenses.amount).label('total_amount')).group_by(Expenses.categoryid).filter(Expenses.userid == current_user.userid).all()
+
+    # Calculate the total expenses for the current user 
+    total_expenses = db.session.query(func.sum(Expenses.amount)).filter(Expenses.userid == current_user.userid).scalar()
+
+    #Prepare data for Chart.js
+    categories = [data.categoryid for data in expenses_data]
+    totals = [float(data.total_amount) for data in expenses_data]
+
+    return render_template('dashboard.html', expenses_by_category= expenses_by_category, total_expenses=total_expenses, categories=categories, totals=totals)

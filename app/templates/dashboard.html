@@ -1,0 +1,40 @@
+<!-- templates/dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+   <!-- Inside dashboard.html -->
+    <canvas id="expensesChart"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    var ctx = document.getElementById('expensesChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',  // Choose the type that best fits your needs
+        data: {
+            labels: {{ categories | tojson }},
+            datasets: [{
+                label: 'Expenses by Category',
+                data: {{ totals | tojson }},
+                backgroundColor: [
+                    // Colors for each category
+                ],
+                borderColor: [
+                    // Border colors for each category
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    </script>
+
+
+
+{% endblock content %}
